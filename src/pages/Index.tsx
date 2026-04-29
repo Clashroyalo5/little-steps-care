@@ -1,9 +1,14 @@
-import { Baby, CalendarCheck, HeartPulse, Home, MapPin, MessageCircle, ShieldCheck, Sparkles, Syringe } from "lucide-react";
+import { useState } from "react";
+import { Baby, CalendarCheck, HeartPulse, Home, MapPin, MessageCircle, Phone, ShieldCheck, Sparkles, Syringe, X } from "lucide-react";
 import clinicHero from "@/assets/pediatric-clinic-chinacota.jpg";
 
 const whatsappPrimary = "https://api.whatsapp.com/send/?phone=%2B573118930428&text&type=phone_number&app_absent=0";
 const whatsappSecondary = "https://api.whatsapp.com/send/?phone=%2B573117358026&text&type=phone_number&app_absent=0";
 const mapsUrl = "https://www.google.com/maps/place/Chin%C3%A1cota,+Norte+de+Santander/@7.600193,-72.623113,14z/data=!3m1!4b1!4m6!3m5!1s0x8e6631e5083d55c3:0xd608396c39fbc9a4!8m2!3d7.6071073!4d-72.6016311!16s%2Fm%2F0280sth?entry=ttu";
+const contacts = [
+  { label: "Número principal", number: "+57 311 893 0428", tel: "+573118930428", whatsapp: whatsappPrimary, tone: "text-accent" },
+  { label: "Segundo contacto", number: "+57 311 735 8026", tel: "+573117358026", whatsapp: whatsappSecondary, tone: "text-fresh" },
+];
 
 const services = [
   { icon: Baby, title: "Niño sano y enfermo", text: "Control pediátrico cercano para crecimiento, síntomas y seguimiento familiar." },
@@ -19,6 +24,8 @@ const prices = [
 ];
 
 const Index = () => {
+  const [selectedContact, setSelectedContact] = useState<(typeof contacts)[number] | null>(null);
+
   const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     event.currentTarget.style.setProperty("--x", `${((event.clientX - rect.left) / rect.width) * 100}%`);
@@ -121,18 +128,40 @@ const Index = () => {
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <a href={whatsappPrimary} className="rounded-3xl bg-card p-6 shadow-[var(--lift-shadow)] transition hover:-translate-y-1 hover:shadow-[var(--card-shadow)] focus:outline-none focus:ring-4 focus:ring-ring/30">
-            <MessageCircle className="mb-4 size-8 text-accent" />
-            <p className="font-extrabold text-muted-foreground">WhatsApp principal</p>
-            <p className="mt-2 text-2xl font-extrabold text-primary">+57 311 893 0428</p>
-          </a>
-          <a href={whatsappSecondary} className="rounded-3xl bg-card p-6 shadow-[var(--lift-shadow)] transition hover:-translate-y-1 hover:shadow-[var(--card-shadow)] focus:outline-none focus:ring-4 focus:ring-ring/30">
-            <MessageCircle className="mb-4 size-8 text-fresh" />
-            <p className="font-extrabold text-muted-foreground">Segundo contacto</p>
-            <p className="mt-2 text-2xl font-extrabold text-primary">+57 311 735 8026</p>
-          </a>
+          {contacts.map((contact) => (
+            <button key={contact.tel} type="button" onClick={() => setSelectedContact(contact)} className="rounded-3xl bg-card p-6 text-left shadow-[var(--lift-shadow)] transition hover:-translate-y-1 hover:shadow-[var(--card-shadow)] focus:outline-none focus:ring-4 focus:ring-ring/30">
+              <Phone className={`mb-4 size-8 ${contact.tone}`} />
+              <p className="font-extrabold text-muted-foreground">{contact.label}</p>
+              <p className="mt-2 text-2xl font-extrabold text-primary">{contact.number}</p>
+            </button>
+          ))}
         </div>
       </section>
+
+      {selectedContact && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/35 px-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="contact-dialog-title" onClick={() => setSelectedContact(null)}>
+          <div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-[var(--card-shadow)]" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-extrabold text-muted-foreground">{selectedContact.label}</p>
+                <h2 id="contact-dialog-title" className="mt-1 text-3xl font-extrabold text-primary">{selectedContact.number}</h2>
+              </div>
+              <button type="button" onClick={() => setSelectedContact(null)} className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-ring/30" aria-label="Cerrar">
+                <X className="size-5" />
+              </button>
+            </div>
+            <p className="mt-5 font-semibold leading-7 text-muted-foreground">¿Cómo deseas comunicarte?</p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <a href={`tel:${selectedContact.tel}`} className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-4 font-extrabold text-primary-foreground shadow-[var(--lift-shadow)] transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-ring/30">
+                <Phone className="size-5" /> Llamar normal
+              </a>
+              <a href={selectedContact.whatsapp} className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 font-extrabold text-accent-foreground shadow-[var(--lift-shadow)] transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-ring/30">
+                <MessageCircle className="size-5" /> WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 };
